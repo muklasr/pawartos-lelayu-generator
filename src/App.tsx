@@ -63,12 +63,13 @@ function App() {
       <div className="form-pane">
         <div className="pane-header">
           <h1>Pawartos Lelayu Generator</h1>
-          <button className="btn" onClick={handleExport} disabled={printing}>
-            <Download size={18} /> {printing ? 'Menyiapkan...' : 'Export / Print'}
-          </button>
         </div>
 
         <DocumentForm data={data} onChange={handleDataChange} errors={errors} />
+
+        <button className="btn btn-export" onClick={handleExport} disabled={printing}>
+          <Download size={18} /> {printing ? 'Menyiapkan...' : 'Export / Print'}
+        </button>
       </div>
 
       <div className="preview-pane">

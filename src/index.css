@@ -279,6 +279,14 @@ body {
 .btn-danger:hover {
   background: rgba(239, 68, 68, 0.3);
 }
+.btn-export {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+}
 
 .family-row {
   display: flex;
