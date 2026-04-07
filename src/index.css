@@ -185,6 +185,11 @@ body {
     height: 297mm !important;
     padding: 25mm 20mm !important;
     page-break-after: always;
+    break-after: page;
+  }
+  .a4-container:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
   @page {
     size: A4;
@@ -227,6 +232,16 @@ body {
 .family-row input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+.form-group input.input-error,
+.family-row input.input-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+}
+.form-group input.input-error:focus,
+.family-row input.input-error:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3) !important;
 }
 
 .btn {

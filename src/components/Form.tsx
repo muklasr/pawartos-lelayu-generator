@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Calendar, Clock, ChevronDown, ChevronRight } from 'lucide-react';
 import type { ObituaryData, FamilyMember, Receiver } from '../types';
 import { formatWithPasaran } from '../types';
@@ -6,9 +6,10 @@ import { formatWithPasaran } from '../types';
 interface FormProps {
   data: ObituaryData;
   onChange: (data: ObituaryData) => void;
+  errors?: Set<string>;
 }
 
-export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
+export const DocumentForm: React.FC<FormProps> = ({ data, onChange, errors = new Set() }) => {
   const [openPanels, setOpenPanels] = useState({
     almarhum: true,
     meninggal: true,
@@ -17,9 +18,31 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
     penerima: true
   });
 
+  // Auto-expand panels that contain error fields
+  useEffect(() => {
+    if (errors.size === 0) return;
+    const panelFields: Record<string, string[]> = {
+      almarhum: ['namaAlmarhum', 'umur'],
+      meninggal: ['meninggalDinten', 'meninggalWaktu', 'meninggalAlamat'],
+      pemakaman: ['pemakamanDinten', 'pemakamanWaktu', 'pemakamanRumahDuka', 'pemakamanMakam'],
+    };
+    const forceOpen: Partial<typeof openPanels> = {};
+    Object.entries(panelFields).forEach(([panel, fields]) => {
+      if (fields.some(f => errors.has(f))) {
+        forceOpen[panel as keyof typeof openPanels] = true;
+      }
+    });
+    if (Object.keys(forceOpen).length > 0) {
+      setOpenPanels(prev => ({ ...prev, ...forceOpen }));
+    }
+  }, [errors]);
+
   const togglePanel = (panel: keyof typeof openPanels) => {
     setOpenPanels(prev => ({ ...prev, [panel]: !prev[panel] }));
   };
+
+  // Helper: return 'input-error' class name when field has an error
+  const err = (field: string) => errors.has(field) ? 'input-error' : '';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -105,7 +128,7 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
           <h2>Data Almarhum/Almarhumah</h2>
           {openPanels.almarhum ? <ChevronDown size={20} color="#e2e8f0" /> : <ChevronRight size={20} color="#e2e8f0" />}
         </div>
-        
+
         {openPanels.almarhum && (
           <div className="panel-content">
             <div className="form-group">
@@ -115,7 +138,8 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
                 name="namaAlmarhum"
                 value={data.namaAlmarhum}
                 onChange={handleChange}
-                placeholder="Moch. Budi Santoso"
+                placeholder="Budi"
+                className={err('namaAlmarhum')}
               />
             </div>
             <div className="form-group">
@@ -125,7 +149,8 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
                 name="umur"
                 value={data.umur}
                 onChange={handleChange}
-                placeholder="68"
+                placeholder="70"
+                className={err('umur')}
               />
             </div>
           </div>
@@ -137,45 +162,47 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
           <h2>Waktu & Tempat Meninggal</h2>
           {openPanels.meninggal ? <ChevronDown size={20} color="#e2e8f0" /> : <ChevronRight size={20} color="#e2e8f0" />}
         </div>
-        
+
         {openPanels.meninggal && (
           <div className="panel-content">
             <div className="form-group flex-row">
-          <div style={{ flex: 1 }}>
-            <label>Hari, Tanggal</label>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <input
-                type="text"
-                name="meninggalDinten"
-                value={data.meninggalDinten}
-                onChange={handleChange}
-                placeholder="Jumat Kliwon, 12 Agustus 2024"
-              />
-              <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
-                <Calendar size={18} color="white" />
-                <input type="date" onChange={handleMeninggalDatePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Tanggal" />
+              <div style={{ flex: 1 }}>
+                <label>Hari, Tanggal</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    name="meninggalDinten"
+                    value={data.meninggalDinten}
+                    onChange={handleChange}
+                    placeholder="Jumat Kliwon, 12 Agustus 2024"
+                    className={err('meninggalDinten')}
+                  />
+                  <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
+                    <Calendar size={18} color="white" />
+                    <input type="date" onChange={handleMeninggalDatePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Tanggal" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="form-group flex-row">
-          <div style={{ flex: 1 }}>
-            <label>Waktu (Jam)</label>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <input
-                type="text"
-                name="meninggalWaktu"
-                value={data.meninggalWaktu}
-                onChange={handleChange}
-                placeholder="09:00 WIB"
-              />
-              <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
-                <Clock size={18} color="white" />
-                <input type="time" onChange={handleMeninggalTimePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Waktu" />
+            <div className="form-group flex-row">
+              <div style={{ flex: 1 }}>
+                <label>Waktu (Jam)</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    name="meninggalWaktu"
+                    value={data.meninggalWaktu}
+                    onChange={handleChange}
+                    placeholder="09:00 WIB"
+                    className={err('meninggalWaktu')}
+                  />
+                  <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
+                    <Clock size={18} color="white" />
+                    <input type="time" onChange={handleMeninggalTimePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Waktu" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
             <div className="form-group">
               <label>Tempat Meninggal</label>
               <input
@@ -184,6 +211,7 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
                 value={data.meninggalAlamat}
                 onChange={handleChange}
                 placeholder="RSUD Dr. Soetomo Surabaya"
+                className={err('meninggalAlamat')}
               />
             </div>
           </div>
@@ -199,51 +227,54 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
         {openPanels.pemakaman && (
           <div className="panel-content">
             <div className="form-group flex-row">
-          <div style={{ flex: 1 }}>
-            <label>Hari, Tanggal</label>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <input
-                type="text"
-                name="pemakamanDinten"
-                value={data.pemakamanDinten}
-                onChange={handleChange}
-                placeholder="Sabtu Legi, 13 Agustus 2024"
-              />
-              <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
-                <Calendar size={18} color="white" />
-                <input type="date" onChange={handlePemakamanDatePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Tanggal" />
+              <div style={{ flex: 1 }}>
+                <label>Hari, Tanggal</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    name="pemakamanDinten"
+                    value={data.pemakamanDinten}
+                    onChange={handleChange}
+                    placeholder="Sabtu Legi, 13 Agustus 2024"
+                    className={err('pemakamanDinten')}
+                  />
+                  <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
+                    <Calendar size={18} color="white" />
+                    <input type="date" onChange={handlePemakamanDatePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Tanggal" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="form-group flex-row">
-          <div style={{ flex: 1 }}>
-            <label>Waktu Berangkat (Jam)</label>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <input
-                type="text"
-                name="pemakamanWaktu"
-                value={data.pemakamanWaktu}
-                onChange={handleChange}
-                placeholder="10:00 WIB"
-              />
-              <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
-                <Clock size={18} color="white" />
-                <input type="time" onChange={handlePemakamanTimePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Waktu" />
+            <div className="form-group flex-row">
+              <div style={{ flex: 1 }}>
+                <label>Waktu Berangkat (Jam)</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    name="pemakamanWaktu"
+                    value={data.pemakamanWaktu}
+                    onChange={handleChange}
+                    placeholder="10:00 WIB"
+                    className={err('pemakamanWaktu')}
+                  />
+                  <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
+                    <Clock size={18} color="white" />
+                    <input type="time" defaultValue="14:00" onChange={handlePemakamanTimePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Waktu" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Alamat Rumah Duka</label>
-          <input
-            type="text"
-            name="pemakamanRumahDuka"
-            value={data.pemakamanRumahDuka}
-            onChange={handleChange}
-            placeholder="Jl. Ahmad Yani No. 45, Malang"
-          />
-        </div>
+            <div className="form-group">
+              <label>Alamat Rumah Duka</label>
+              <input
+                type="text"
+                name="pemakamanRumahDuka"
+                value={data.pemakamanRumahDuka}
+                onChange={handleChange}
+                placeholder="Jl. Ahmad Yani No. 45, Malang"
+                className={err('pemakamanRumahDuka')}
+              />
+            </div>
             <div className="form-group">
               <label>Alamat Makam</label>
               <input
@@ -252,6 +283,7 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
                 value={data.pemakamanMakam}
                 onChange={handleChange}
                 placeholder="TPU Kasin, Malang"
+                className={err('pemakamanMakam')}
               />
             </div>
           </div>
@@ -274,22 +306,22 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
               </button>
             </div>
 
-        <datalist id="relations-list">
-          <option value="Bapak" />
-          <option value="Ibu" />
-          <option value="Suami" />
-          <option value="Istri" />
-          <option value="Anak" />
-          <option value="Menantu" />
-          <option value="Anak/Menantu" />
-          <option value="Cucu" />
-          <option value="Kakak" />
-          <option value="Adik" />
-          <option value="Kakak/Ipar" />
-          <option value="Adik/Ipar" />
-          <option value="Saudara" />
-          <option value="Keponakan" />
-        </datalist>
+            <datalist id="relations-list">
+              <option value="Bapak" />
+              <option value="Ibu" />
+              <option value="Suami" />
+              <option value="Istri" />
+              <option value="Anak" />
+              <option value="Menantu" />
+              <option value="Anak/Menantu" />
+              <option value="Cucu" />
+              <option value="Kakak" />
+              <option value="Adik" />
+              <option value="Kakak/Ipar" />
+              <option value="Adik/Ipar" />
+              <option value="Saudara" />
+              <option value="Keponakan" />
+            </datalist>
 
             {data.keluarga.map((member, i) => (
               <div key={member.id} className="family-row">
@@ -329,11 +361,11 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
                 <Plus size={16} /> Tambah
               </button>
             </div>
-            
+
             {data.penerima.length === 0 && (
-               <div style={{ textAlign: 'center', padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)'}}>
-                 Dikosongi (halaman akan mencetak titik-titik untuk ditulis manual).
-               </div>
+              <div style={{ textAlign: 'center', padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)' }}>
+                Dikosongi (halaman akan mencetak titik-titik untuk ditulis manual).
+              </div>
             )}
 
             {data.penerima.map((member, i) => (

@@ -49,23 +49,19 @@ export const getDefaultObituaryData = (): ObituaryData => {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   return {
-    namaAlmarhum: 'Budi',
-    umur: '70',
+    namaAlmarhum: '',
+    umur: '',
 
     meninggalDinten: formatWithPasaran(today),
-    meninggalWaktu: '09:00 WIB',
-    meninggalAlamat: 'RSUD Dr. Soetomo Surabaya',
+    meninggalWaktu: '',
+    meninggalAlamat: '',
 
     pemakamanDinten: formatWithPasaran(tomorrow),
-    pemakamanWaktu: '10:00 WIB',
-    pemakamanRumahDuka: 'Jl. Ahmad Yani No. 45, Malang',
-    pemakamanMakam: 'TPU Kasin, Malang',
+    pemakamanWaktu: '',
+    pemakamanRumahDuka: '',
+    pemakamanMakam: '',
 
-    keluarga: [
-      { id: '1', name: 'Siti', relation: 'Istri' },
-      { id: '2', name: 'Dana/Lestari', relation: 'Anak/Menantu' },
-      { id: '3', name: 'Dewi', relation: 'Cucu' }
-    ],
+    keluarga: [],
     penerima: []
   };
 };
