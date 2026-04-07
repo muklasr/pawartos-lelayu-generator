@@ -1,0 +1,363 @@
+import React, { useState } from 'react';
+import { Plus, Trash2, Calendar, Clock, ChevronDown, ChevronRight } from 'lucide-react';
+import type { ObituaryData, FamilyMember, Receiver } from '../types';
+import { formatWithPasaran } from '../types';
+
+interface FormProps {
+  data: ObituaryData;
+  onChange: (data: ObituaryData) => void;
+}
+
+export const DocumentForm: React.FC<FormProps> = ({ data, onChange }) => {
+  const [openPanels, setOpenPanels] = useState({
+    almarhum: true,
+    meninggal: true,
+    pemakaman: true,
+    keluarga: true,
+    penerima: true
+  });
+
+  const togglePanel = (panel: keyof typeof openPanels) => {
+    setOpenPanels(prev => ({ ...prev, [panel]: !prev[panel] }));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    onChange({ ...data, [name]: value });
+  };
+
+  const handleMeninggalDatePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+      onChange({ ...data, meninggalDinten: formatWithPasaran(new Date(e.target.value)) });
+    }
+  };
+
+  const handleMeninggalTimePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+      onChange({ ...data, meninggalWaktu: `${e.target.value} WIB` });
+    }
+  };
+
+  const handlePemakamanDatePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+      onChange({ ...data, pemakamanDinten: formatWithPasaran(new Date(e.target.value)) });
+    }
+  };
+
+  const handlePemakamanTimePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+      onChange({ ...data, pemakamanWaktu: `${e.target.value} WIB` });
+    }
+  };
+
+  const addFamilyMember = () => {
+    const newMember: FamilyMember = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: '',
+      relation: ''
+    };
+    onChange({ ...data, keluarga: [...data.keluarga, newMember] });
+  };
+
+  const removeFamilyMember = (id: string) => {
+    if (window.confirm('Hapus anggota keluarga ini?')) {
+      onChange({ ...data, keluarga: data.keluarga.filter(member => member.id !== id) });
+    }
+  };
+
+  const updateFamilyMember = (id: string, field: keyof FamilyMember, value: string) => {
+    onChange({
+      ...data,
+      keluarga: data.keluarga.map(member =>
+        member.id === id ? { ...member, [field]: value } : member
+      )
+    });
+  };
+
+  const addReceiver = () => {
+    const newReceiver: Receiver = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: 'Takmir',
+      address: 'Masjid'
+    };
+    onChange({ ...data, penerima: [...data.penerima, newReceiver] });
+  };
+
+  const removeReceiver = (id: string) => {
+    if (window.confirm('Hapus penerima ini?')) {
+      onChange({ ...data, penerima: data.penerima.filter(r => r.id !== id) });
+    }
+  };
+
+  const updateReceiver = (id: string, field: keyof Receiver, value: string) => {
+    onChange({
+      ...data,
+      penerima: data.penerima.map(r =>
+        r.id === id ? { ...r, [field]: value } : r
+      )
+    });
+  };
+
+  return (
+    <>
+      <div className="glass-panel">
+        <div className="panel-header" onClick={() => togglePanel('almarhum')}>
+          <h2>Data Almarhum/Almarhumah</h2>
+          {openPanels.almarhum ? <ChevronDown size={20} color="#e2e8f0" /> : <ChevronRight size={20} color="#e2e8f0" />}
+        </div>
+        
+        {openPanels.almarhum && (
+          <div className="panel-content">
+            <div className="form-group">
+              <label>Nama Almarhum</label>
+              <input
+                type="text"
+                name="namaAlmarhum"
+                value={data.namaAlmarhum}
+                onChange={handleChange}
+                placeholder="Moch. Budi Santoso"
+              />
+            </div>
+            <div className="form-group">
+              <label>Umur (Tahun)</label>
+              <input
+                type="number"
+                name="umur"
+                value={data.umur}
+                onChange={handleChange}
+                placeholder="68"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="glass-panel">
+        <div className="panel-header" onClick={() => togglePanel('meninggal')}>
+          <h2>Waktu & Tempat Meninggal</h2>
+          {openPanels.meninggal ? <ChevronDown size={20} color="#e2e8f0" /> : <ChevronRight size={20} color="#e2e8f0" />}
+        </div>
+        
+        {openPanels.meninggal && (
+          <div className="panel-content">
+            <div className="form-group flex-row">
+          <div style={{ flex: 1 }}>
+            <label>Hari, Tanggal</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="text"
+                name="meninggalDinten"
+                value={data.meninggalDinten}
+                onChange={handleChange}
+                placeholder="Jumat Kliwon, 12 Agustus 2024"
+              />
+              <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
+                <Calendar size={18} color="white" />
+                <input type="date" onChange={handleMeninggalDatePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Tanggal" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="form-group flex-row">
+          <div style={{ flex: 1 }}>
+            <label>Waktu (Jam)</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="text"
+                name="meninggalWaktu"
+                value={data.meninggalWaktu}
+                onChange={handleChange}
+                placeholder="09:00 WIB"
+              />
+              <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
+                <Clock size={18} color="white" />
+                <input type="time" onChange={handleMeninggalTimePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Waktu" />
+              </div>
+            </div>
+          </div>
+        </div>
+            <div className="form-group">
+              <label>Tempat Meninggal</label>
+              <input
+                type="text"
+                name="meninggalAlamat"
+                value={data.meninggalAlamat}
+                onChange={handleChange}
+                placeholder="RSUD Dr. Soetomo Surabaya"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="glass-panel">
+        <div className="panel-header" onClick={() => togglePanel('pemakaman')}>
+          <h2>Informasi Pemakaman</h2>
+          {openPanels.pemakaman ? <ChevronDown size={20} color="#e2e8f0" /> : <ChevronRight size={20} color="#e2e8f0" />}
+        </div>
+
+        {openPanels.pemakaman && (
+          <div className="panel-content">
+            <div className="form-group flex-row">
+          <div style={{ flex: 1 }}>
+            <label>Hari, Tanggal</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="text"
+                name="pemakamanDinten"
+                value={data.pemakamanDinten}
+                onChange={handleChange}
+                placeholder="Sabtu Legi, 13 Agustus 2024"
+              />
+              <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
+                <Calendar size={18} color="white" />
+                <input type="date" onChange={handlePemakamanDatePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Tanggal" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="form-group flex-row">
+          <div style={{ flex: 1 }}>
+            <label>Waktu Berangkat (Jam)</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="text"
+                name="pemakamanWaktu"
+                value={data.pemakamanWaktu}
+                onChange={handleChange}
+                placeholder="10:00 WIB"
+              />
+              <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--accent)', borderRadius: '8px', flexShrink: 0 }}>
+                <Clock size={18} color="white" />
+                <input type="time" onChange={handlePemakamanTimePick} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', left: 0, top: 0, padding: 0 }} title="Pilih Waktu" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Alamat Rumah Duka</label>
+          <input
+            type="text"
+            name="pemakamanRumahDuka"
+            value={data.pemakamanRumahDuka}
+            onChange={handleChange}
+            placeholder="Jl. Ahmad Yani No. 45, Malang"
+          />
+        </div>
+            <div className="form-group">
+              <label>Alamat Makam</label>
+              <input
+                type="text"
+                name="pemakamanMakam"
+                value={data.pemakamanMakam}
+                onChange={handleChange}
+                placeholder="TPU Kasin, Malang"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="glass-panel">
+        <div className="panel-header" onClick={() => togglePanel('keluarga')}>
+          <h2 style={{ margin: 0 }}>Keluarga yang Ditinggalkan</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {openPanels.keluarga ? <ChevronDown size={20} color="#e2e8f0" /> : <ChevronRight size={20} color="#e2e8f0" />}
+          </div>
+        </div>
+
+        {openPanels.keluarga && (
+          <div className="panel-content">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+              <button className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.875rem' }} onClick={addFamilyMember}>
+                <Plus size={16} /> Tambah
+              </button>
+            </div>
+
+        <datalist id="relations-list">
+          <option value="Bapak" />
+          <option value="Ibu" />
+          <option value="Suami" />
+          <option value="Istri" />
+          <option value="Anak" />
+          <option value="Menantu" />
+          <option value="Anak/Menantu" />
+          <option value="Cucu" />
+          <option value="Kakak" />
+          <option value="Adik" />
+          <option value="Kakak/Ipar" />
+          <option value="Adik/Ipar" />
+          <option value="Saudara" />
+          <option value="Keponakan" />
+        </datalist>
+
+            {data.keluarga.map((member, i) => (
+              <div key={member.id} className="family-row">
+                <input
+                  type="text"
+                  value={member.name}
+                  onChange={(e) => updateFamilyMember(member.id, 'name', e.target.value)}
+                  placeholder={`Nama ${i + 1}`}
+                />
+                <input
+                  type="text"
+                  list="relations-list"
+                  value={member.relation}
+                  onChange={(e) => updateFamilyMember(member.id, 'relation', e.target.value)}
+                  placeholder="Hubungan"
+                />
+                <button className="btn btn-danger" onClick={() => removeFamilyMember(member.id)} title="Hapus">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="glass-panel">
+        <div className="panel-header" onClick={() => togglePanel('penerima')}>
+          <h2 style={{ margin: 0 }}>Penerima Surat (Opsional)</h2>
+          {openPanels.penerima ? <ChevronDown size={20} color="#e2e8f0" /> : <ChevronRight size={20} color="#e2e8f0" />}
+        </div>
+
+        {openPanels.penerima && (
+          <div className="panel-content">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+              Jika diisi, PDF akan terbuat menjadi beberapa halaman per penerima.
+              <button className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.875rem' }} onClick={addReceiver}>
+                <Plus size={16} /> Tambah
+              </button>
+            </div>
+            
+            {data.penerima.length === 0 && (
+               <div style={{ textAlign: 'center', padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)'}}>
+                 Dikosongi (halaman akan mencetak titik-titik untuk ditulis manual).
+               </div>
+            )}
+
+            {data.penerima.map((member, i) => (
+              <div key={member.id} className="family-row">
+                <input
+                  type="text"
+                  value={member.name}
+                  onChange={(e) => updateReceiver(member.id, 'name', e.target.value)}
+                  placeholder={`Bpk/Ibu/Sdr ${i + 1}`}
+                />
+                <input
+                  type="text"
+                  value={member.address}
+                  onChange={(e) => updateReceiver(member.id, 'address', e.target.value)}
+                  placeholder="Alamat/Di (opsional)"
+                />
+                <button className="btn btn-danger" onClick={() => removeReceiver(member.id)} title="Hapus">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
