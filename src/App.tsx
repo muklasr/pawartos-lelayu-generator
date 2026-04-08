@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { Printer, Download, Smartphone } from 'lucide-react';
+import { Printer, Download, Smartphone, Check } from 'lucide-react';
 import { DocumentPreview } from './components/Document';
 import { DocumentForm } from './components/Form';
 import { getDefaultObituaryData } from './types';
-import { exportMobilePdf } from './utils/mobileExport';
+import { ensureFonts, generateMobilePdfBase64 } from './utils/mobileExport';
 import type { ObituaryData } from './types';
 import './index.css';
 
@@ -17,7 +17,13 @@ const isMobileDevice = (): boolean =>
 function App() {
   const [data, setData] = useState<ObituaryData>(getDefaultObituaryData());
   const [printing, setPrinting] = useState(false);
+  const [mobilePdfUrl, setMobilePdfUrl] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Pre-load fonts on mount to speed up first generation
+  useEffect(() => {
+    ensureFonts();
+  }, []);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -52,11 +58,13 @@ function App() {
     setErrors(new Set());
 
     if (onMobile) {
-      // Mobile: use pdfmake for a reliable direct PDF download
-      // (async: fetches Liberation Serif font on first call, cached after)
       setPrinting(true);
       try {
-        await exportMobilePdf(data);
+        const url = await generateMobilePdfBase64(data);
+        setMobilePdfUrl(url);
+      } catch (err) {
+        console.error('Generation failed', err);
+        alert('Gagal menyiapkan PDF. Silakan coba lagi.');
       } finally {
         setPrinting(false);
       }
@@ -68,6 +76,8 @@ function App() {
 
   const handleDataChange = (newData: ObituaryData) => {
     setData(newData);
+    setMobilePdfUrl(null); // Clear generated PDF when data changes
+    
     // Clear error for any field that now has a value
     if (errors.size > 0) {
       setErrors(prev => {
@@ -80,6 +90,8 @@ function App() {
     }
   };
 
+  const mobileFilename = `Pawartos_Lelayu_${data.namaAlmarhum.replace(/\s+/g, '_')}.pdf`;
+
   return (
     <div className="app-container">
       <div className="form-pane">
@@ -89,10 +101,23 @@ function App() {
 
         <DocumentForm data={data} onChange={handleDataChange} errors={errors} />
 
-        <button className="btn btn-export" onClick={handleExport} disabled={printing}>
-          {onMobile ? <Smartphone size={18} /> : <Download size={18} />}
-          {printing ? 'Menyiapkan...' : onMobile ? 'Download PDF' : 'Export / Print'}
-        </button>
+        <div className="export-actions">
+          {onMobile && mobilePdfUrl ? (
+            <a 
+              href={mobilePdfUrl} 
+              download={mobileFilename}
+              className="btn btn-export btn-success"
+              onClick={() => setTimeout(() => setMobilePdfUrl(null), 2000)}
+            >
+              <Check size={18} /> Simpan ke Perangkat
+            </a>
+          ) : (
+            <button className="btn btn-export" onClick={handleExport} disabled={printing}>
+              {onMobile ? <Smartphone size={18} /> : <Download size={18} />}
+              {printing ? 'Menyiapkan...' : onMobile ? 'Siapkan PDF' : 'Export / Print'}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="preview-pane">

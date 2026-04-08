@@ -57,7 +57,7 @@ export const getDefaultObituaryData = (): ObituaryData => {
     meninggalAlamat: '',
 
     pemakamanDinten: formatWithPasaran(tomorrow),
-    pemakamanWaktu: '',
+    pemakamanWaktu: '14:00 WIB',
     pemakamanRumahDuka: '',
     pemakamanMakam: '',
 

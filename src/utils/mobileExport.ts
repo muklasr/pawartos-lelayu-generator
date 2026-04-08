@@ -157,7 +157,7 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
  * when loaded as a script tag) to inject Times AFM metrics — no network needed.
  */
 let fontsReady = false;
-function ensureFonts(): void {
+export function ensureFonts(): void {
   if (fontsReady) return;
   fontsReady = true;
 
@@ -193,10 +193,10 @@ function ensureFonts(): void {
 }
 
 /**
- * Export the obituary as a PDF using pdfmake (mobile-optimised).
- * Uses the PDF standard built-in Times font — no network requests needed.
+ * Generate a Base64 data URI for the obituary PDF.
+ * To be used in a two-step download flow to preserve user gesture.
  */
-export async function exportMobilePdf(data: ObituaryData): Promise<void> {
+export async function generateMobilePdfBase64(data: ObituaryData): Promise<string> {
   ensureFonts();
 
   const pages =
@@ -217,6 +217,6 @@ export async function exportMobilePdf(data: ObituaryData): Promise<void> {
     defaultStyle: { font: 'Times', fontSize: 12 },
   };
 
-  const filename = `Pawartos_Lelayu_${data.namaAlmarhum.replace(/\s+/g, '_')}.pdf`;
-  pdfMake.createPdf(docDefinition).download(filename);
+  const base64Data = await pdfMake.createPdf(docDefinition).getBase64();
+  return `data:application/octet-stream;base64,${base64Data}`;
 }

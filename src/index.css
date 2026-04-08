@@ -286,6 +286,16 @@ body {
   margin-top: 0.5rem;
   border-radius: 10px;
   letter-spacing: 0.02em;
+  text-decoration: none;
+}
+.btn-success {
+  background: #10b981;
+}
+.btn-success:hover {
+  background: #059669;
+}
+.export-actions {
+  margin-top: 1rem;
 }
 
 .family-row {

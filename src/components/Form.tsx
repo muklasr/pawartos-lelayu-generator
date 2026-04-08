@@ -138,7 +138,7 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange, errors = new
                 name="namaAlmarhum"
                 value={data.namaAlmarhum}
                 onChange={handleChange}
-                placeholder="Budi"
+                placeholder="Himmel"
                 className={err('namaAlmarhum')}
               />
             </div>
@@ -149,7 +149,7 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange, errors = new
                 name="umur"
                 value={data.umur}
                 onChange={handleChange}
-                placeholder="70"
+                placeholder="76"
                 className={err('umur')}
               />
             </div>
@@ -210,7 +210,7 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange, errors = new
                 name="meninggalAlamat"
                 value={data.meninggalAlamat}
                 onChange={handleChange}
-                placeholder="RSUD Dr. Soetomo Surabaya"
+                placeholder="RSUD Dr. Sardjito Yogyakarta"
                 className={err('meninggalAlamat')}
               />
             </div>
@@ -271,7 +271,7 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange, errors = new
                 name="pemakamanRumahDuka"
                 value={data.pemakamanRumahDuka}
                 onChange={handleChange}
-                placeholder="Jl. Ahmad Yani No. 45, Malang"
+                placeholder="Jl. Prontera No. 12, Bantul"
                 className={err('pemakamanRumahDuka')}
               />
             </div>
@@ -282,7 +282,7 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange, errors = new
                 name="pemakamanMakam"
                 value={data.pemakamanMakam}
                 onChange={handleChange}
-                placeholder="TPU Kasin, Malang"
+                placeholder="Sasonoloyo Prontera, Bantul"
                 className={err('pemakamanMakam')}
               />
             </div>
