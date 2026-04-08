@@ -2,6 +2,7 @@ import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 // @ts-ignore – pdfmake standard font container (no type defs)
 import timesFontContainer from 'pdfmake/build/standard-fonts/Times';
+import type { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import type { ObituaryData, Receiver } from '../types';
 
 
@@ -13,7 +14,7 @@ const LABEL_WIDTH = 150; // points — mirrors the fixed 180px left column
 const BODY = { font: 'Times', fontSize: 12, lineHeight: 1.3 };
 
 /** Two-column label:value row — mirrors .doc-section grid */
-const labelRow = (label: string, value: string): object => ({
+const labelRow = (label: string, value: string): Content => ({
   columns: [
     { text: label, width: LABEL_WIDTH, ...BODY },
     { text: `: ${value}`, width: '*', ...BODY },
@@ -23,7 +24,7 @@ const labelRow = (label: string, value: string): object => ({
 });
 
 /** Build the content nodes for a single page / recipient */
-function buildPageContent(data: ObituaryData, receiver?: Receiver): object[] {
+function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
   const receiverName = receiver
     ? `Bpk/Ibu/Sdr: ${receiver.name}`
     : 'Bpk/Ibu/Sdr...............................................';
@@ -201,17 +202,17 @@ export async function exportMobilePdf(data: ObituaryData): Promise<void> {
   const pages =
     data.penerima && data.penerima.length > 0 ? data.penerima : [undefined];
 
-  const content: object[] = [];
+  const content: Content[] = [];
   pages.forEach((receiver, index) => {
     const nodes = buildPageContent(data, receiver ?? undefined);
     if (index > 0) (nodes[0] as any).pageBreak = 'before';
     content.push(...nodes);
   });
 
-  const docDefinition = {
-    pageSize: 'A4' as const,
+  const docDefinition: TDocumentDefinitions = {
+    pageSize: 'A4',
     // 20mm left/right, 25mm top/bottom — mirrors `.a4-container { padding: 25mm 20mm }`
-    pageMargins: [56.7, 70.9, 56.7, 70.9] as [number, number, number, number],
+    pageMargins: [56.7, 70.9, 56.7, 70.9],
     content,
     defaultStyle: { font: 'Times', fontSize: 12 },
   };
