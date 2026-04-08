@@ -4,6 +4,7 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 import timesFontContainer from 'pdfmake/build/standard-fonts/Times';
 import type { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import type { ObituaryData, Receiver } from '../types';
+import { strings } from './i18n';
 
 
 // ── Layout constants (mirror the CSS) ─────────────────────────────────────
@@ -25,20 +26,22 @@ const labelRow = (label: string, value: string): Content => ({
 
 /** Build the content nodes for a single page / recipient */
 function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
+  const t = strings[data.language];
+
   const receiverName = receiver
-    ? `Bpk/Ibu/Sdr: ${receiver.name}`
-    : 'Bpk/Ibu/Sdr...............................................';
+    ? `${t.receiverName}: ${receiver.name}`
+    : `${t.receiverName}...............................................`;
 
   const receiverAddress = receiver
-    ? `Wonten ing: ${receiver.address || ''}`
-    : 'Wonten ing................................................';
+    ? `${t.wonten_ing}: ${receiver.address || ''}`
+    : `${t.wonten_ing}................................................`;
 
   const familyItems =
     data.keluarga && data.keluarga.length > 0
       ? data.keluarga.map((m, i) => ({
         columns: [
           { text: `${i + 1}. ${m.name || '[Nama]'}`, width: 160, ...BODY },
-          { text: `(${m.relation || 'Hubungan dengan almarhum'})`, width: '*', ...BODY },
+          { text: m.relation ? `(${m.relation})` : '', width: '*', ...BODY },
         ],
         columnGap: 0,
         margin: [0, 2, 0, 2] as [number, number, number, number],
@@ -46,7 +49,7 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
       : [{
         columns: [
           { text: '1. [Nama]', width: 160, ...BODY },
-          { text: '(Hubungan dengan almarhum)', width: '*', ...BODY },
+          { text: '', width: '*', ...BODY },
         ],
         columnGap: 0,
         margin: [0, 2, 0, 2] as [number, number, number, number],
@@ -55,7 +58,7 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
   return [
     // ── Title ────────────────────────────────────────────────────────────
     {
-      text: 'PAWARTOS LELAYU',
+      text: t.title,
       font: 'Times', fontSize: 18, bold: true,
       alignment: 'center',
       margin: [0, 0, 0, 24] as [number, number, number, number],
@@ -64,7 +67,7 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
     // ── Katur ────────────────────────────────────────────────────────────
     {
       stack: [
-        { text: 'Katur Dhumateng', ...BODY },
+        { text: t.katur, ...BODY },
         { text: receiverName, ...BODY, bold: !!receiver },
         { text: receiverAddress, ...BODY },
       ],
@@ -73,14 +76,14 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
 
     // ── Salam ─────────────────────────────────────────────────────────────
     {
-      text: "Assalamu'alaikum Wr. Wb.",
+      text: t.salam,
       ...BODY,
       margin: [0, 0, 0, 24] as [number, number, number, number],
     },
 
     // ── Innalillahi (centred + italic) ────────────────────────────────────
     {
-      text: "INNALILLAHI WAINNA ILLAIHI ROJI'UN",
+      text: t.innalillahi,
       font: 'Times', fontSize: 12, italics: true,
       alignment: 'center',
       margin: [0, 0, 0, 24] as [number, number, number, number],
@@ -88,7 +91,7 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
 
     // ── Opening ───────────────────────────────────────────────────────────
     {
-      text: 'Sampun Kapundhut wangsul dumateng Ngarso dalem Allah SWT, panjenenganipun:',
+      text: t.opening,
       ...BODY,
       margin: [0, 0, 0, 18] as [number, number, number, number],
     },
@@ -104,7 +107,7 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
 
     // ── Age ───────────────────────────────────────────────────────────────
     {
-      text: `Yuswo: ${data.umur || '[Umur]'} tahun`,
+      text: `${t.yuswo}: ${data.umur || '[Umur]'} ${t.tahun}`,
       ...BODY,
       alignment: 'center',
       margin: [0, 0, 0, 24] as [number, number, number, number],
@@ -113,10 +116,10 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
     // ── Tilar donya ───────────────────────────────────────────────────────
     {
       stack: [
-        { text: 'Tilar donya,', ...BODY, margin: [0, 0, 0, 2] as [number, number, number, number] },
-        labelRow('Rikolo Dinten', data.meninggalDinten || '[EEEE OOOO, dd MMMM yyyy]'),
-        labelRow('Wanci Tabuh', data.meninggalWaktu || '[hh:mm WIB]'),
-        labelRow('Wonten ing', data.meninggalAlamat || '[Alamat meninggal]'),
+        { text: t.tilar_donya, ...BODY, margin: [0, 0, 0, 2] as [number, number, number, number] },
+        labelRow(t.rikolo_dinten, data.meninggalDinten || '[Hari, tgl meninggal]'),
+        labelRow(t.wanci_tabuh, data.meninggalWaktu || '[hh:mm WIB]'),
+        labelRow(t.wonten_ing_place, data.meninggalAlamat || '[Alamat meninggal]'),
       ],
       margin: [0, 0, 0, 16] as [number, number, number, number],
     },
@@ -124,18 +127,18 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
     // ── Pemakaman ─────────────────────────────────────────────────────────
     {
       stack: [
-        { text: 'Jenazah badhe kasareaken:', ...BODY, margin: [0, 0, 0, 2] as [number, number, number, number] },
-        labelRow('Dinten', data.pemakamanDinten || '[EEEE OOOO, dd MMMM yyyy]'),
-        labelRow('Wanci Tabuh', data.pemakamanWaktu || '[hh:mm WIB]'),
-        labelRow('Saking griyo dhukhito', data.pemakamanRumahDuka || '[Alamat rumah duka]'),
-        labelRow('Wonten', data.pemakamanMakam || '[Alamat makam]'),
+        { text: t.kasareaken, ...BODY, margin: [0, 0, 0, 2] as [number, number, number, number] },
+        labelRow(t.dinten, data.pemakamanDinten || '[Hari, tgl pemakaman]'),
+        labelRow(t.wanci_tabuh, data.pemakamanWaktu || '[hh:mm WIB]'),
+        labelRow(t.saking_griyo, data.pemakamanRumahDuka || '[Alamat rumah duka]'),
+        labelRow(t.wonten, data.pemakamanMakam || '[Alamat makam]'),
       ],
       margin: [0, 0, 0, 16] as [number, number, number, number],
     },
 
     // ── Closing paragraph ─────────────────────────────────────────────────
     {
-      text: "Kanthi pawartos lelayu meniko, dumateng Bpk/Ibu/Sederek sedaya kasuwun paring panjurung do'a saha paring pakurmatan ingkang pungkasan dumateng Almarhum. Wassalamu'alaikum Wr. Wb.",
+      text: t.closing,
       ...BODY,
       alignment: 'justify',
       margin: [0, 0, 0, 24] as [number, number, number, number],
@@ -144,7 +147,7 @@ function buildPageContent(data: ObituaryData, receiver?: Receiver): Content[] {
     // ── Family ────────────────────────────────────────────────────────────
     {
       stack: [
-        { text: 'Ingkang nandang sungkowo:', ...BODY },
+        { text: t.sungkowo, ...BODY },
         { stack: familyItems, margin: [24, 6, 0, 0] as [number, number, number, number] },
       ],
     },

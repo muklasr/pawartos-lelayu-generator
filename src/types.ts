@@ -11,6 +11,7 @@ export interface Receiver {
 }
 
 export interface ObituaryData {
+  language: 'jw' | 'id';
   namaAlmarhum: string;
   umur: string;
 
@@ -43,12 +44,17 @@ export const formatWithPasaran = (d: Date): string => {
   return `${dayName} ${pasaran}, ${dateRest}`;
 };
 
+export const formatStandard = (d: Date): string => {
+  return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+};
+
 export const getDefaultObituaryData = (): ObituaryData => {
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   return {
+    language: 'jw',
     namaAlmarhum: '',
     umur: '',
 

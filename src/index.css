@@ -115,6 +115,29 @@ body {
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+.lang-selector {
+  display: flex;
+  background: rgba(15, 23, 42, 0.4);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+.lang-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.lang-btn.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
 
 /* Glassmorphism helpers */
 .glass-panel {

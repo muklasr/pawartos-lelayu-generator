@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Calendar, Clock, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Calendar, Clock, ChevronDown, ChevronRight, Languages } from 'lucide-react';
 import type { ObituaryData, FamilyMember, Receiver } from '../types';
-import { formatWithPasaran } from '../types';
+import { formatWithPasaran, formatStandard } from '../types';
 
 interface FormProps {
   data: ObituaryData;
@@ -49,9 +49,15 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange, errors = new
     onChange({ ...data, [name]: value });
   };
 
+  const handleLanguageChange = (lang: 'jw' | 'id') => {
+    onChange({ ...data, language: lang });
+  };
+
   const handleMeninggalDatePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value) {
-      onChange({ ...data, meninggalDinten: formatWithPasaran(new Date(e.target.value)) });
+      const date = new Date(e.target.value);
+      const formatted = data.language === 'jw' ? formatWithPasaran(date) : formatStandard(date);
+      onChange({ ...data, meninggalDinten: formatted });
     }
   };
 
@@ -63,7 +69,9 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange, errors = new
 
   const handlePemakamanDatePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value) {
-      onChange({ ...data, pemakamanDinten: formatWithPasaran(new Date(e.target.value)) });
+      const date = new Date(e.target.value);
+      const formatted = data.language === 'jw' ? formatWithPasaran(date) : formatStandard(date);
+      onChange({ ...data, pemakamanDinten: formatted });
     }
   };
 
@@ -123,6 +131,28 @@ export const DocumentForm: React.FC<FormProps> = ({ data, onChange, errors = new
 
   return (
     <>
+      <div className="glass-panel" style={{ padding: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>
+            <Languages size={18} /> Bahasa Konten PDF
+          </div>
+          <div className="lang-selector">
+            <button 
+              className={`lang-btn ${data.language === 'jw' ? 'active' : ''}`}
+              onClick={() => handleLanguageChange('jw')}
+            >
+              Jawa
+            </button>
+            <button 
+              className={`lang-btn ${data.language === 'id' ? 'active' : ''}`}
+              onClick={() => handleLanguageChange('id')}
+            >
+              Indonesia
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="glass-panel">
         <div className="panel-header" onClick={() => togglePanel('almarhum')}>
           <h2>Data Almarhum/Almarhumah</h2>
